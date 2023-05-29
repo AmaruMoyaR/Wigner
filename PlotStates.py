@@ -3,7 +3,7 @@ from qutip import *
 import qutip as q
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from States import plot_wigner_2d_3d
+import States 
 
 N = 35 #why not : Hilbert Space dimensions
 xvec = np.linspace(-6, 6, 1500)
@@ -30,7 +30,7 @@ psiex = (basis(10, 0) + basis(10, 3) + basis(10, 9)).unit() #example state
 
 fock = q.fock(N, 3)
 W_fock = q.wigner(fock, xvec, xvec)
-q.plot_wigner_fock_distribution(fock, figsize=(10, 4), colorbar=True)
+# q.plot_wigner_fock_distribution(fock, figsize=(10, 4), colorbar=True)
 
-plot_wigner_2d_3d(fock, xvec)
+States.plot_wigner3d(fock)
 plt.show()
