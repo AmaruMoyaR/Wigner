@@ -32,5 +32,5 @@ fock = q.fock(N, 3)
 W_fock = q.wigner(fock, xvec, xvec)
 q.plot_wigner_fock_distribution(fock, figsize=(10, 4), colorbar=True)
 
-plot_wigner_2d_3d(fock)
+plot_wigner_2d_3d(fock, xvec)
 plt.show()

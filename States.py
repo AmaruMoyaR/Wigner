@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-def plot_wigner_2d_3d(psi):
+def plot_wigner_2d_3d(psi,xvec):
     #fig, axes = plt.subplots(1, 2, subplot_kw={'projection': '3d'}, figsize=(12, 6))
     W = wigner(psi, xvec, xvec)
 
