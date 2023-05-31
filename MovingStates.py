@@ -3,10 +3,14 @@ from numpy import *
 import qutip as q
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from States import plot_wigner_2d_3d
+# from States import plot_wigner_2d_3d
 import matplotlib.animation as ani
 import matplotlib.colors as clr
 import types
+
+
+Nfock = 2
+Ntraj = 2
 
 # Define Kerr parameters
 chi = -5.
@@ -14,7 +18,7 @@ Delta = 0
 kappa_1, kappa_2 = 0.5,0.
 
 # Construct Kerr SLH
-a_k = q.destroy()
+a_k = q.destroy(Ntraj)
 S = -q.qeye(2)
 L = [sqrt(kappa_1)*a_k, sqrt(kappa_2)*a_k]
 H = Delta*a_k.dag()*a_k + chi/2*a_k.dag()*a_k.dag()*a_k*a_k
@@ -26,12 +30,10 @@ alpha0 = 10.
 # SYS.show()
 # SYS = SYS.toSLH(); SYS
 
-Nfock = 10
 # SYS_num.space.dimension = Nfock
 
 psi0 = q.coherent(Nfock, 0)
 Tsim = arange(0, 2.5, 1e-3)
-Ntraj = 25
 
 # H_num, L_num = SYS_num.HL_to_qutip()
 qmc = q.mcsolve(H, psi0, Tsim, L, [], ntraj=Ntraj)
