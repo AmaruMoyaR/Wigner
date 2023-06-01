@@ -2,21 +2,20 @@ import numpy as np
 from qutip import * 
 import qutip as q
 import matplotlib.pyplot as plt
-from matplotlib import cm
+import matplotlib
 
-xvec = np.linspace(-6, 6, 1500)
+# xvec = np.linspace(-6, 6, 1500)
 
-psi = (basis(10, 0) + basis(10, 3) + basis(10, 9)).unit() #example state
+# psi = (basis(10, 0) + basis(10, 2) + basis(10, 3)).unit() #example state
 
-W = wigner(psi, xvec, xvec)
-
-wmap = wigner_cmap(W)  # Generate Wigner colormap
-
-# nrm = plt.colors.Normalize(-W.max(), W.max())
-
-
-def plot_wigner3d(psi):
+def plot_wigner3d(psi,xvec):
     #fig, axes = plt.subplots(1, 2, subplot_kw={'projection': '3d'}, figsize=(12, 6))
+    
+    W = wigner(psi, xvec, xvec)
+
+    wmap = wigner_cmap(W)  # Generate Wigner colormap
+
+    # nrm = matplotlib.colors.Normalize(-W.max(), W.max())
     
     fig = plt.figure(figsize=(20, 8))
 
