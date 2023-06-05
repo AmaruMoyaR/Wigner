@@ -28,47 +28,37 @@ tlist = np.linspace(0, 150, 101) #time steps!
 
 psi0 = tensor(basis(N, 0), basis(2, 0))  # start without excitations
 xvec = np.linspace(-5, 5, 200)
-# intial state
-
 
 # operators
 a = tensor(destroy(N), qeye(2)) #anihilation x identity ##a_a
 sm = tensor(qeye(N), destroy(2)) #identity x anihilation ##a_b
 sx = tensor(qeye(N), sigmax()) #sigma 
-
 # Hamiltonian
 # H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() + a) * sx
-
-
 # Hamiltonian
 if use_rwa:
     H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() * sm + a * sm.dag())
 else:
     H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() + a) * (sm + sm.dag())
+    
 # collapse operators
 c_ops = []
-
 # cavity relaxation
 rate = kappa * (1 + n_th_a)
 if rate > 0.0:
     c_ops.append(np.sqrt(rate) * a)
-
 # cavity excitation, if temperature > 0
 rate = kappa * n_th_a
 if rate > 0.0:
     c_ops.append(np.sqrt(rate) * a.dag())
-
 # qubit relaxation
 rate = Gamma
 if rate > 0.0:
     c_ops.append(np.sqrt(rate) * sm.dag())
-    
- ######-----------------########   
-    
+
 opt = Options(nsteps=2000)  # allow extra time-steps
 #idk what it does imma keep it for now! ^
 
-######-----------------########
 #evolve the system
 output = mesolve(H, psi0, tlist, c_ops, [a.dag() * a, sm.dag() * sm],
                  options=opt)

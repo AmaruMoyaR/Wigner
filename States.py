@@ -86,7 +86,7 @@ def wigner_cmap(W, levels=1024, shift=0, max_color='#09224F',
     return wig_cmap
 
 
-def plot_wigner3d(psi,xvec, fig_vertical=None, subplot_position=111):
+def plot_wigner3d(psi,xvec):
     W = wigner(psi, xvec, xvec)
     wmap = wigner_cmap(W)  # Generate Wigner colormap
     
@@ -100,24 +100,48 @@ def plot_wigner3d(psi,xvec, fig_vertical=None, subplot_position=111):
     # plt.close(fig)
     return fig
 
+
+def figuremaker(psi_list, xvec, n=None, m =None):
+    
+    W_list = [wigner(psi, xvec, xvec) for psi in psi_list] #list of states
+    wmap_list = [wigner_cmap(W) for W in W_list] #map for colors of 
+    # n   # Number of columns ; m   # Number of rows
+    fig, axes = plt.subplots(n, m, figsize=(6, 8))  # Create the figure and subplots
+    fig.patch.set_visible(False)
+    # 
+    # Iterate over the rows and columns
+    for i in range(n):
+        for j in range(m):
+            # Customize the plotting based on the position of the subplot
+            if j == 0:
+                # for w in range(len(psi_list)):
+                ax = axes[i, j]
+                ax.axis('off')
+                ax = fig.add_subplot(n,m,i*m+j+1)   
+                plot_wigner(psi_list[i], fig=fig, ax=ax, alpha_max=5.5, cmap=wmap_list[i], colorbar = True);
+                # 
+                # fig.tight_layout()
+            
+            elif j == 1:
+                # for w in range(len(psi_list)):
+                ax = axes[i, j]
+                ax.axis('off')
+                ax = fig.add_subplot(n, m, i*m+j+1, projection='3d')
+                plot_wigner(psi_list[i], fig=fig, ax=ax, projection='3d', alpha_max=5.5, cmap=wmap_list[i]);
+                # ax.axis('off')
+                # fig.tight_layout()
+    # plt.close(fig)
+    # Adjust the spacing between subplots
+    fig.tight_layout()
+    return fig
+    
+    
+    
+    
 # plt.show()
 
 #     def plot_wigner3d(psi_list, xvec, fig_vertical=None, subplot_positions=None):
-#     W_list = [wigner(psi, xvec, xvec) for psi in psi_list]
-#     wmap_list = [wigner_cmap(W) for W in W_list]
-
-#     if fig_vertical is None:
-#         fig_vertical = plt.figure(figsize=(8, 12))
-
-#     num_subplots = len(psi_list)
-#     if subplot_positions is None:
-#         subplot_positions = [f"{num_subplots}1{i+1}" for i in range(num_subplots)]
-
-#     for psi, wmap, position in zip(psi_list, wmap_list, subplot_positions):
-#         ax = fig_vertical.add_subplot(position)
-#         plot_wigner(psi, fig=fig_vertical, ax=ax, alpha_max=5.5, cmap=wmap, colorbar=True)
-
-#     return fig_vertical
+   
 
 # # Create a new figure with vertical subplots
 # fig_vertical = plt.figure(figsize=(8, 12))
@@ -131,6 +155,46 @@ def plot_wigner3d(psi,xvec, fig_vertical=None, subplot_position=111):
 
 # # Call plot_wigner3d to add subplots to the figure
 # fig_vertical = plot_wigner3d(psi_list, xvec, fig_vertical, subplot_positions)
+
+# # Show the figure with subplots
+# plt.show()
+
+# # Create a new figure with vertical subplots
+# fig_vertical = plt.figure(figsize=(8, 12))
+
+# # Call plot_wigner3d for the first subplot
+# fig_vertical = plot_wigner3d(psi, xvec, fig_vertical, 311)
+
+# # Call plot_wigner3d for the second subplot
+# fig_vertical = plot_wigner3d(psi, xvec, fig_vertical, 312)
+
+# # Call plot_wigner3d for the third subplot
+# fig_vertical = plot_wigner3d(psi, xvec, fig_vertical, 313)
+
+# # Show the figure with subplots
+# plt.show()
+# #############
+
+# psi_list = [(basis(10, 8) + basis(10,3)+ basis(10,5)).unit(), q.fock(N, 3), q.coherent(N, np.sqrt(10)) + q.coherent(N, -np.sqrt(10))]
+
+# fig_vertical = plt.figure(figsize=(8, 12))
+
+# num_subplots = len(psi_list)
+# W_list = [wigner(psi, xvec, xvec) for psi in psi_list]
+# wmap_list = [wigner_cmap(W) for W in W_list]
+# subplot_positions = [311, 312, 313]
+
+# ax = fig_vertical.add_subplot(3,1,1)
+# plot_wigner3d(psi_list[0],xvec)
+
+# ax = fig_vertical.add_subplot(3,1,2)
+# plot_wigner3d(psi_list[1], xvec)
+
+# ax = fig_vertical.add_subplot(3,1,3)
+# plot_wigner3d(psi_list[2], xvec)
+
+# # Call plot_wigner3d to add subplots to the figure
+# # fig_vertical = plot_wigner3d(psi_list, xvec, fig_vertical, subplot_positions)
 
 # # Show the figure with subplots
 # plt.show()
