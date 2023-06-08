@@ -82,37 +82,36 @@ n_a = output.expect[1]
 #                  options=Options(nsteps=5000))
 
 rho = output.states #density matix yeaaah
+print(rho)
+# fig, axes = plt.subplots(2, len(rho), figsize=(3 * len(rho), 6))
 
-fig, axes = plt.subplots(2, len(rho),
-                         figsize=(3 * len(rho), 6))
 
+for idx, rho_ss in enumerate(rho):
+    # trace out the cavity density matrix
+    rho_cavity = ptrace(rho_ss, 0)
 
-# for idx, rho_ss in enumerate(rho):
-#     # trace out the cavity density matrix
-#     rho_cavity = ptrace(rho_ss, 0)
+    # calculate its wigner function
+    W = wigner(rho_cavity, xvec, xvec)
+    W_list = parfor(W, output.states)
+    # plot its wigner function
+    wlim = abs(W).max()
+    axes[0, idx].contourf(
+        xvec,
+        xvec,
+        W,
+        100,
+        norm = mpl.colors.Normalize(-wlim, wlim),
+        cmap = plt.get_cmap("RdBu"),
+    )
+    axes[0, idx].set_title(r"$t = %.1f$" % tlist[idx])
 
-#     # calculate its wigner function
-#     W = wigner(rho_cavity, xvec, xvec)
-#     W_list = parfor(W, output.states)
-#     # plot its wigner function
-#     wlim = abs(W).max()
-#     axes[0, idx].contourf(
-#         xvec,
-#         xvec,
-#         W,
-#         100,
-#         norm = mpl.colors.Normalize(-wlim, wlim),
-#         cmap = plt.get_cmap("RdBu"),
-#     )
-#     axes[0, idx].set_title(r"$t = %.1f$" % tlist[idx])
+    # plot its fock-state distribution
+    axes[1, idx].bar(np.arange(0, N), np.real(rho_cavity.diag()),
+                     color="blue", alpha=0.8)
+    axes[1, idx].set_ylim(0, 1)
+    axes[1, idx].set_xlim(0, 15)
 
-#     # plot its fock-state distribution
-#     axes[1, idx].bar(np.arange(0, N), np.real(rho_cavity.diag()),
-#                      color="blue", alpha=0.8)
-#     axes[1, idx].set_ylim(0, 1)
-#     axes[1, idx].set_xlim(0, 15)
-
-# plt.show()
+plt.show()
 
 # # Define Kerr parameters
 # chi = -5.
