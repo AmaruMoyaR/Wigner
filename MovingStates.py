@@ -7,10 +7,10 @@ from matplotlib import cm
 from States import plot_wigner3d
 import matplotlib.animation as ani
 import matplotlib.colors as clr
-import types
+from scipy.linalg import expm
 
 
-N = 30 #we define the Hilbert Space Dimensions # number of cavity fock states
+N = 40 #we define the Hilbert Space Dimensions # number of cavity fock states
 n = np.arange(0, N-5)
 w_atom = 1.0 * 2 * np.pi #atom frequency
 w_cavity = 1.0 * 2 * np.pi
@@ -30,17 +30,18 @@ psi0 = tensor(basis(N, 0), basis(2, 0))  # start without excitations
 xvec = np.linspace(-5, 5, 200)
 
 # operators
-a = tensor(destroy(N), qeye(2)) #anihilation x identity ##a_a
-sm = tensor(qeye(N), destroy(2)) #identity x anihilation ##a_b
-sx = tensor(qeye(N), sigmax()) #sigma 
+a = tensor(destroy(N), identity(2)) #anihilation x identity ##a_a
+sm = tensor(identity(N), destroy(2)) #identity x anihilation ##a_b
+sz = tensor(identity(N), sigmaz()) #sigma 
 # Hamiltonian
 # H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() + a) * sx
 # Hamiltonian
 if use_rwa:
     H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() * sm + a * sm.dag())
 else:
-    H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() + a) * (sm + sm.dag())
-    
+    # H = w_cavity * a.dag() * a + w_atom * sm.dag() * sm + g * (a.dag() + a) * (sm + sm.dag())
+    H_int = 1/2 * w_cavity * sz + w_atom*a.dag()*a + Gamma*(sm.dag()*a + sm*a.dag())
+
 # collapse operators
 c_ops = []
 # cavity relaxation
@@ -67,134 +68,92 @@ output = mesolve(H, psi0, tlist, c_ops, [a.dag() * a, sm.dag() * sm],
 n_c = output.expect[0] #we can get the occupation pbb!
 n_a = output.expect[1]
 
-# fig, axes = plt.subplots(1, 1, figsize=(10,6))
-# axes.plot(tlist, n_c, label="Cavity")
-# axes.plot(tlist, n_a, label="Atom excited state")
-# axes.legend(loc=0)
-# axes.set_xlabel('Time')
-# axes.set_ylabel('Occupation probability')
-# axes.set_title('Vacuum Rabi oscillations')
+e_i = coherent(N,np.sqrt(5)) #estado coherente con 5 fotones promedio
+#estado basal de 2 niveles
+#ground state
+g_atomo = basis(2,0)
+#excited state
+e_atomo = basis(2,1)
 
+#Estado inicial es el producto tensorial
+estado_e = tensor(e_atomo,e_i)
+estado_g = tensor(g_atomo,e_i)
 
+#Calculamos la probabilidad atómica para ambos niveles de energía según el tiempo
+#definimos el tiempo
+tiempo = np.linspace(0,25*Gamma/w_atom,500)
+
+#Dado el estado inicial estado_g, la evolución se calcula usando mesolve
+estado_final = mesolve(H_int,estado_g,tiempo)
+
+evolucion_temporal_estado = estado_final.states
+#QUeremos ver la tasa de inversion definida como el bracket del estado con el operador sig_z
+tasa_inversion = expect(sz,evolucion_temporal_estado)
 
 # tlist = np.linspace(0, 25, 5) #list of time
 # output = mesolve(H, psi0, tlist, c_ops, [],
 #                  options=Options(nsteps=5000))
-
-rho = output.states #density matix yeaaah
-print(rho)
+# rho = output.states #density matix yeaaah
+# print(rho)
 # fig, axes = plt.subplots(2, len(rho), figsize=(3 * len(rho), 6))
+wigners=[]
+x_vec = np.linspace(-10,10,300)
+
+for i in range(len(evolucion_temporal_estado)):
+    wigners.append(wigner(evolucion_temporal_estado[i],x_vec,x_vec))
 
 
-for idx, rho_ss in enumerate(rho):
-    # trace out the cavity density matrix
-    rho_cavity = ptrace(rho_ss, 0)
+from moviepy.editor import VideoClip
+from moviepy.video.io.bindings import mplfig_to_npimage
+ 
+#duracion del video
+duration = 25*Gamma/w_atom
+x_vec = np.linspace(-10,10,300)
+fig,ax = plt.subplots()
+# method to get frames
+# t recorre desde 0 hasta duration.
+def make_frame(t):
+     
+    # clear
+    ax.clear()
+    #cada tiempo se define como
+    tiempo = int(t*500/duration)
+    # Now we plot the energy spectrum for inter-cell coupling 
+    cm1 = ax.pcolormesh(x_vec,x_vec,wigners[tiempo],cmap='RdBu')
+    ax.set_title('Wigner evolution')
+    # returning numpy image
+    return mplfig_to_npimage(fig)
 
-    # calculate its wigner function
-    W = wigner(rho_cavity, xvec, xvec)
-    W_list = parfor(W, output.states)
-    # plot its wigner function
-    wlim = abs(W).max()
-    axes[0, idx].contourf(
-        xvec,
-        xvec,
-        W,
-        100,
-        norm = mpl.colors.Normalize(-wlim, wlim),
-        cmap = plt.get_cmap("RdBu"),
-    )
-    axes[0, idx].set_title(r"$t = %.1f$" % tlist[idx])
+# fig.colorbar(ax.pcolormesh(x_vec,x_vec,wigners[0],cmap='RdBu'))
+# creating animation
+animation = VideoClip(make_frame, duration = duration)
+ 
+# displaying animation with auto play and looping
+animation.ipython_display(fps = 60, loop = True, autoplay = True)
 
-    # plot its fock-state distribution
-    axes[1, idx].bar(np.arange(0, N), np.real(rho_cavity.diag()),
-                     color="blue", alpha=0.8)
-    axes[1, idx].set_ylim(0, 1)
-    axes[1, idx].set_xlim(0, 15)
+# for idx, rho_ss in enumerate(rho):
+#     # trace out the cavity density matrix
+#     rho_cavity = ptrace(rho_ss, 0)
 
-plt.show()
+#     # calculate its wigner function
+#     W = wigner(rho_cavity, xvec, xvec)
+#     W_list = parfor(W, output.states)
+#     # plot its wigner function
+#     wlim = abs(W).max()
+#     axes[0, idx].contourf(
+#         xvec,
+#         xvec,
+#         W,
+#         100,
+#         norm = mpl.colors.Normalize(-wlim, wlim),
+#         cmap = plt.get_cmap("RdBu"),
+#     )
+#     axes[0, idx].set_title(r"$t = %.1f$" % tlist[idx])
 
-# # Define Kerr parameters
-# chi = -5.
-# Delta = 0
-# kappa_1, kappa_2 = 0.5,0.
+#     # plot its fock-state distribution
+#     axes[1, idx].bar(np.arange(0, N), np.real(rho_cavity.diag()),
+#                      color="blue", alpha=0.8)
+#     axes[1, idx].set_ylim(0, 1)
+#     axes[1, idx].set_xlim(0, 15)
 
-# # Construct Kerr SLH
-# a_k = q.destroy(Ntraj)
-# S = -q.qeye(2)
-# L = [sqrt(kappa_1)*a_k, sqrt(kappa_2)*a_k]
-# H = Delta*a_k.dag()*a_k + chi/2*a_k.dag()*a_k.dag()*a_k*a_k
-# # KERR = SLH(S, L, H).toSLH()
-
-# # Add coherent drive
-# alpha0 = 10.
-# # SYS = KERR << Displace(alpha=alpha0)+cid(1)
-# # SYS.show()
-# # SYS = SYS.toSLH(); SYS
-
-# # SYS_num.space.dimension = Nfock
-
-# psi0 = q.coherent(Nfock, 0)
-# Tsim = arange(0, 2.5, 1e-3)
-
-# # H_num, L_num = SYS_num.HL_to_qutip()
-# qmc = q.mcsolve(H, psi0, Tsim, L, [], ntraj=Ntraj)
-
-# N_num = q.num(Nfock)
-
-# plt.figure(figsize=(12,5))
-# plt.xlabel("Time", fontsize=14); plt.ylabel("Photon Number", fontsize=14)
-# plt.tick_params(labelsize=14)
-# plt.plot(qmc.times, ones(qmc.times.size), "--k")
 # plt.show()
-
-# for traj in qmc.states:
-#     plt.plot(qmc.times, q.expect(N_num, traj), "b", alpha=0.2)
-    
-# plt.show()
-
-# Tsim = arange(0, 6, 1e-2)
-
-# qme = q.mesolve(H, psi0, Tsim, L, [])
-# rho_ss = q.steadystate(H, L)    
-
-# plt.figure(figsize=(12,5))
-# plt.xlabel("Time", fontsize=14); plt.ylabel("Photon Number", fontsize=14)
-# plt.tick_params(labelsize=14)
-
-# plt.plot(qme.times, q.expect(rho_ss, N_num)*ones(qme.times.size), "--k")
-# plt.plot(qme.times, q.expect(qme.states, N_num)) # Compute steady-state of the system
-# plt.show()
-
-# # Set Wigner function scale
-# xvec = linspace(-7, 7, 150)
-
-# # Parallelized Wigner computation
-# def compute_wigner(rho):
-#     return q.wigner(rho, xvec, xvec)
-# W_list = q.parfor(compute_wigner, qme.states)
-
-
-# # Prepare figure
-# fname = "rabi_oscill.gif"
-# fig, ax = plt.subplots(1,2, figsize=(12,5))
-
-# # Plot steady state
-# ax[1].contourf(xvec, xvec, W_list, 100, norm=clr.Normalize(-0.25,0.25), cmap=plt.get_cmap("RdBu"))
-# ax[1].set_aspect("equal"); ax[1].set_title("Steady State", fontsize=14); ax[1].tick_params(labelsize=14)
-# ax[1].set_xlabel(r"$x$", fontsize=14); ax[1].set_ylabel(r"$p$", fontsize=14)
-
-# # Animate evolution
-# def animate(n):
-#     ax[0].cla(); ax[0].set_aspect("equal"); ax[0].tick_params(labelsize=14)
-#     ax[0].set_title("Time: %.2f"%(output.times[n]), fontsize=14);
-#     ax[0].set_xlabel(r"$x$", fontsize=14); ax[0].set_ylabel(r"$p$", fontsize=14)
-#     im = ax[0].contourf(xvec, xvec, W_list[n], 100, norm=clr.Normalize(-0.25,0.25), cmap=plt.get_cmap("RdBu"))
-#     def setvisible(self, vis): # Work-around for visibility bug in contourf
-#         for c in self.collections: c.set_visible(vis)
-#     im.set_visible = types.MethodType(setvisible, im)
-# anim = ani.FuncAnimation(fig, animate, frames=len(output.times))
-# anim.save(fname, writer="imagemagick", fps=20)
-# plt.show()
-
-# import IPython.display as ipyd
-# ipyd.Image(url=fname)
