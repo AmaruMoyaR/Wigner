@@ -136,9 +136,43 @@ def figuremaker(psi_list, xvec, n=None, m =None):
     return fig
     
     
+def Hamiltonian_2levels(psi_inic, t):
+    #Constantes del sistema
+    w0 = 1
+    w = 1
+    lamda = 1
+    #Creamos los operadores para el hamiltoniano
+    sig_atomo = q.tensor(q.destroy(2),q.identity(N)) #producto tensorial entre sigma 2 y la identidad N
+    a_campo = q.tensor(q.identity(2),q.destroy(N)) #producto tensorial entre la identidad 2 y operador destruccion N
+    sig_z = q.tensor(q.sigmaz(),q.identity(N)) #producto tensorial entre sigma z y la identidad N
+    #Creamos el hamiltoniano para la evolución temporal
+    H_int = 0.5 * w0 * sig_z + w*a_campo.dag()*a_campo + lamda*(sig_atomo.dag()*a_campo + sig_atomo*a_campo.dag())
     
+    #estado basal de 2 niveles
+    g_atomo = q.basis(2,0)#ground state
+    e_atomo = q.basis(2,1)#excited state
+    estado_e = q.tensor(e_atomo,psi_inic)
+    estado_g = q.tensor(g_atomo,psi_inic)
     
-# plt.show()
+    tiempo = np.linspace(0,25*lamda/w,300)
+    #Dado el estado inicial estado_g, la evolución se calcula usando mesolve
+    estado_final = q.mesolve(H_int,estado_g,tiempo)
+    evolucion_temporal_estado = estado_final.states
+    return evolucion_temporal_estado, tiempo
+    
+def PopulationInv(sig_z,estado): #calcula tasa de inversion
+    tasa_inversion = q.expect(sig_z,estado)
+    return tasa_inversion
+    
+def WignerEvolution(State_in_time,xvec,Wigners):
+    for i in range(len(State_in_time)):
+        Wigners.append(q.wigner(State_in_time[i],xvec,xvec))    
+    return Wigners
+
+def VonEntropy(State,t):
+    rho = q.ket2dm(State)
+    Entropy = [q.entropy_vn(rho) for i in range(len(t))]
+    return Entropy 
 
 #     def plot_wigner3d(psi_list, xvec, fig_vertical=None, subplot_positions=None):
    
