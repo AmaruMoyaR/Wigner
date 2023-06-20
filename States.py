@@ -232,7 +232,7 @@ def figuremaker(psi_list, xvec, n=None, m =None):
     return fig
     
     
-def Hamiltonian_2levels(psi_inic,N , t = 300, w0 = 1. , w = 1., lamda = 1):
+def Hamiltonian_2levels(psi_inic, N , t = 300, w0 = 1. , w = 1., lamda = 1):
     #Constantes del sistema
     # w0 = 1
     # w = 1
@@ -254,12 +254,13 @@ def Hamiltonian_2levels(psi_inic,N , t = 300, w0 = 1. , w = 1., lamda = 1):
     #Dado el estado inicial estado_g, la evolución se calcula usando mesolve
     estado_final = q.mesolve(H_int,estado_g,tiempo)
     evolucion_temporal_estado = estado_final.states
-    return evolucion_temporal_estado, tiempo
+    tasa_inversion = q.expect(sig_z, evolucion_temporal_estado)
     
+    return evolucion_temporal_estado, tiempo, tasa_inversion
     
-def PopulationInv(sig_z,estado): #calcula tasa de inversion
-    tasa_inversion = q.expect(sig_z,estado)
-    return tasa_inversion
+# def PopulationInv(sig_z,estado): #calcula tasa de inversion
+#     tasa_inversion = q.expect(sig_z,estado)
+#     return tasa_inversion
 
 
 def Plot_Population(tiempo, tasa_inversion, color):
@@ -286,7 +287,6 @@ def VonEntropy(State,t):
 
 def AnimatedWigner(Wigners, xvec, savename):
         
-        xvec = np.linspace(-4, 4, 300)
         W = np.array(Wigners)
         wlim = abs(W).max()
         levels = np.linspace(-wlim, wlim, 30)
@@ -312,7 +312,7 @@ def AnimatedWigner(Wigners, xvec, savename):
 
         # Create the animation
         ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
-        writer = animation.FFMpegWriter(fps=60, metadata=dict(artist='Yo'), bitrate=-1)
+        writer = animation.FFMpegWriter(fps=30, metadata=dict(artist='Yo'), bitrate=-1)
         ani.save(savename + '.mp4', writer=writer)
         plt.draw()
         plt.show()
@@ -320,9 +320,9 @@ def AnimatedWigner(Wigners, xvec, savename):
 # animation_name = input("Enter animation name: ")  # Prompt for animation name
 
 def AnimatePopulation(tasa_inversion, tiempo, savename, color = 'dodgerblue'):
-# Create the figure and subplots
+    # Create the figure and subplots
     fig = plt.figure(figsize=(6, 6))
-
+    
     # Subplot 1: Population Inversion
     ax = fig.add_subplot(111)
     line, = ax.plot([], [], c=str(color))
@@ -349,7 +349,8 @@ def AnimatePopulation(tasa_inversion, tiempo, savename, color = 'dodgerblue'):
     # Create the animation
     ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
     # Save the animation
-    writer = animation.PillowWriter(fps=60, metadata=dict(artist='Yo'), bitrate=-1)
+    writer = animation.PillowWriter(fps=30, metadata=dict(artist='Yo'), bitrate=-1)
     ani.save(savename + '.mp4', writer=writer)
+    plt.draw()
     plt.show()
 
