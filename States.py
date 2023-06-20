@@ -3,6 +3,9 @@ from qutip import *
 import qutip as q
 import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.animation as animation
+import matplotlib.cm as cm
+import datetime as dt
 
 # xvec = np.linspace(-6, 6, 1500)
 def wigner_cmap(W, levels=1024, shift=-0.01, max_color='#09224F',
@@ -84,6 +87,7 @@ def wigner_cmap(W, levels=1024, shift=-0.01, max_color='#09224F',
                                                             adjust_RGBA,
                                                             N=levels)
     return wig_cmap
+
 
 def plot_wigner(rho, fig=None, ax=None, figsize=(6, 6),
                 cmap=None, alpha_max=7.5, colorbar=False,
@@ -228,11 +232,11 @@ def figuremaker(psi_list, xvec, n=None, m =None):
     return fig
     
     
-def Hamiltonian_2levels(psi_inic, t):
+def Hamiltonian_2levels(psi_inic,N , t = 300, w0 = 1. , w = 1., lamda = 1):
     #Constantes del sistema
-    w0 = 1
-    w = 1
-    lamda = 1
+    # w0 = 1
+    # w = 1
+    # lamda = 1
     #Creamos los operadores para el hamiltoniano
     sig_atomo = q.tensor(q.destroy(2),q.identity(N)) #producto tensorial entre sigma 2 y la identidad N
     a_campo = q.tensor(q.identity(2),q.destroy(N)) #producto tensorial entre la identidad 2 y operador destruccion N
@@ -246,81 +250,106 @@ def Hamiltonian_2levels(psi_inic, t):
     estado_e = q.tensor(e_atomo,psi_inic)
     estado_g = q.tensor(g_atomo,psi_inic)
     
-    tiempo = np.linspace(0,25*lamda/w,300)
+    tiempo = np.linspace(0,25*lamda/w,t)
     #Dado el estado inicial estado_g, la evolución se calcula usando mesolve
     estado_final = q.mesolve(H_int,estado_g,tiempo)
     evolucion_temporal_estado = estado_final.states
     return evolucion_temporal_estado, tiempo
     
+    
 def PopulationInv(sig_z,estado): #calcula tasa de inversion
     tasa_inversion = q.expect(sig_z,estado)
     return tasa_inversion
+
+
+def Plot_Population(tiempo, tasa_inversion, color):
+    #Ploteamos la tasa de inversion en el tiempo
+    fig, ax = plt.subplots()
+    ax.plot(tiempo, tasa_inversion , c = str(color))
+    ax.set_xlabel(r'$\lambda t / \omega $')
+    ax.set_ylabel('W(t)')
+    ax.set_title('Tasa de inversión estado')
+    plt.show()
     
-def WignerEvolution(State_in_time,xvec,Wigners):
+    
+def WignerEvolution(State_in_time,xvec,Wigners): #esta se demora mas q yo en licenciarme
     for i in range(len(State_in_time)):
         Wigners.append(q.wigner(State_in_time[i],xvec,xvec))    
     return Wigners
+
 
 def VonEntropy(State,t):
     rho = q.ket2dm(State)
     Entropy = [q.entropy_vn(rho) for i in range(len(t))]
     return Entropy 
 
-#     def plot_wigner3d(psi_list, xvec, fig_vertical=None, subplot_positions=None):
-   
 
-# # Create a new figure with vertical subplots
-# fig_vertical = plt.figure(figsize=(8, 12))
+def AnimatedWigner(Wigners, xvec, savename):
+        
+        xvec = np.linspace(-4, 4, 300)
+        W = np.array(Wigners)
+        wlim = abs(W).max()
+        levels = np.linspace(-wlim, wlim, 30)
+        cmap = cm.get_cmap('seismic_r')
 
-# # Example values for psi and xvec
-# psi_list = [psi1, psi2, psi3]  # Replace with your psi values
-# xvec = np.linspace(-5, 5, 100)  # Replace with appropriate xvec values
+        kw = dict(levels=levels, cmap=cmap, vmin=-wlim, vmax=wlim, origin='lower')
+        
+        fig, ax = plt.subplots(figsize=(6, 6))
+        
+        ax = fig.add_subplot(111, aspect='equal') #, autoscale_on=False, xlim=(-10, 10), ylim=(-10, 10)
+        cf = ax.contourf(xvec, xvec, W[0], **kw)
+        cbar = fig.colorbar(cf, ax=ax)
 
-# # Define the subplot positions for each subplot
-# subplot_positions = ['311', '312', '313']
+        def update(frame):
+            fig.clear()
+            ax = fig.add_subplot(111, aspect='equal') #, autoscale_on=False, xlim=(-10, 10), ylim=(-10, 10)
+            cf = ax.contourf(xvec, xvec, W[frame], **kw)#100, norm=plt.Normalize(-wlim, wlim), cmap='RdPu')
+            ax.set_xlabel(r'$\rm{Re}(\alpha)$', fontsize=12)
+            ax.set_ylabel(r'$\rm{Im}(\alpha)$', fontsize=12)
+            current_time = frame*0.1
+            ax.set_title("Wigner function (Time: {:.1f} s)".format(current_time), fontsize=12)
+            fig.colorbar(cf, ax=ax)
 
-# # Call plot_wigner3d to add subplots to the figure
-# fig_vertical = plot_wigner3d(psi_list, xvec, fig_vertical, subplot_positions)
+        # Create the animation
+        ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
+        writer = animation.FFMpegWriter(fps=60, metadata=dict(artist='Yo'), bitrate=-1)
+        ani.save(savename + '.mp4', writer=writer)
+        plt.draw()
+        plt.show()
 
-# # Show the figure with subplots
-# plt.show()
+# animation_name = input("Enter animation name: ")  # Prompt for animation name
 
-# # Create a new figure with vertical subplots
-# fig_vertical = plt.figure(figsize=(8, 12))
+def AnimatePopulation(tasa_inversion, tiempo, savename, color = 'dodgerblue'):
+# Create the figure and subplots
+    fig = plt.figure(figsize=(6, 6))
 
-# # Call plot_wigner3d for the first subplot
-# fig_vertical = plot_wigner3d(psi, xvec, fig_vertical, 311)
+    # Subplot 1: Population Inversion
+    ax = fig.add_subplot(111)
+    line, = ax.plot([], [], c=str(color))
+    ax.set_xlabel(r'$\lambda t / \omega $')
+    ax.set_ylabel('W(t)')
+    ax.set_title('Tasa de inversión estado comprimido coherente')
 
-# # Call plot_wigner3d for the second subplot
-# fig_vertical = plot_wigner3d(psi, xvec, fig_vertical, 312)
+    # Initialize the line data
+    line.set_data([], [])
 
-# # Call plot_wigner3d for the third subplot
-# fig_vertical = plot_wigner3d(psi, xvec, fig_vertical, 313)
+    # Update function
+    def update(frame):
+        ax.clear()
+        # Update Wigner function subplot
+        # Update Tasa de inversión subplot
+        ax.scatter(x=tiempo[frame],y=tasa_inversion[frame], c='red', marker='o')
+        current_time = frame * 0.1        
+        line, = ax.plot(tiempo, tasa_inversion, c='dodgerblue')
+        ax.set_ylim(min(tasa_inversion), max(tasa_inversion))
+        ax.set_xlabel(r'$\lambda t / \omega $')
+        ax.set_ylabel('W(t)')
+        ax.set_title("Population Inversion (Time: {:.1f} s)".format(current_time), fontsize=12)
+    
+    # Create the animation
+    ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
+    # Save the animation
+    writer = animation.PillowWriter(fps=60, metadata=dict(artist='Yo'), bitrate=-1)
+    ani.save(savename + '.mp4', writer=writer)
+    plt.show()
 
-# # Show the figure with subplots
-# plt.show()
-# #############
-
-# psi_list = [(basis(10, 8) + basis(10,3)+ basis(10,5)).unit(), q.fock(N, 3), q.coherent(N, np.sqrt(10)) + q.coherent(N, -np.sqrt(10))]
-
-# fig_vertical = plt.figure(figsize=(8, 12))
-
-# num_subplots = len(psi_list)
-# W_list = [wigner(psi, xvec, xvec) for psi in psi_list]
-# wmap_list = [wigner_cmap(W) for W in W_list]
-# subplot_positions = [311, 312, 313]
-
-# ax = fig_vertical.add_subplot(3,1,1)
-# plot_wigner3d(psi_list[0],xvec)
-
-# ax = fig_vertical.add_subplot(3,1,2)
-# plot_wigner3d(psi_list[1], xvec)
-
-# ax = fig_vertical.add_subplot(3,1,3)
-# plot_wigner3d(psi_list[2], xvec)
-
-# # Call plot_wigner3d to add subplots to the figure
-# # fig_vertical = plot_wigner3d(psi_list, xvec, fig_vertical, subplot_positions)
-
-# # Show the figure with subplots
-# plt.show()
