@@ -22,6 +22,9 @@ AnimatedWigner(Wigners,xvec,'wignerfock')
 
 AnimatePopulation(tasa_inversion,tiempo,'populationwignerfock')
 
+# %%
+
+Entropy = VonEntropy(Wigner,tiempo)
 # if __name__ == '__main__':
 #     multiprocessing.freeze_support()
 #     # Rest of your code
