@@ -312,8 +312,8 @@ def AnimatedWigner(Wigners, xvec, savename):
 
         # Create the animation
         ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
-        writer = animation.FFMpegWriter(fps=30, metadata=dict(artist='Yo'), bitrate=-1)
-        ani.save(savename + '.mp4', writer=writer)
+        writer = animation.FFMpegWriter(fps=25, metadata=dict(artist='Yo'), bitrate=-1)
+        ani.save(savename + '.gif', writer=writer)
         plt.draw()
         plt.show()
 
@@ -341,16 +341,16 @@ def AnimatePopulation(tasa_inversion, tiempo, savename, color = 'dodgerblue'):
         ax.scatter(x=tiempo[frame],y=tasa_inversion[frame], c='red', marker='o')
         current_time = frame * 0.1        
         line, = ax.plot(tiempo, tasa_inversion, c='dodgerblue')
-        ax.set_ylim(min(tasa_inversion), max(tasa_inversion))
+        ax.set_ylim(min(tasa_inversion)-0.2, max(tasa_inversion)+0.2)
         ax.set_xlabel(r'$\lambda t / \omega $')
         ax.set_ylabel('W(t)')
         ax.set_title("Population Inversion (Time: {:.1f} s)".format(current_time), fontsize=12)
     
     # Create the animation
-    ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=tasa_inversion.shape[0], repeat=False)
     # Save the animation
-    writer = animation.PillowWriter(fps=30, metadata=dict(artist='Yo'), bitrate=-1)
-    ani.save(savename + '.mp4', writer=writer)
+    writer = animation.FFMpegWriter(fps=25, metadata=dict(artist='Yo'), bitrate=-1)
+    ani.save(savename + '.gif', writer=writer)
     plt.draw()
     plt.show()
 
