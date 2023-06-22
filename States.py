@@ -280,8 +280,8 @@ def WignerEvolution(State_in_time,xvec,Wigners): #esta se demora mas q yo en lic
 
 
 def VonEntropy(State,t):
-    rho = q.ket2dm(State)
-    Entropy = [q.entropy_vn(rho) for i in range(len(t))]
+    # rho = q.ket2dm(State)
+    Entropy = [q.entropy_vn(State) for i in range(len(t))]
     return Entropy 
 
 
