@@ -24,7 +24,7 @@ AnimatePopulation(tasa_inversion,tiempo,'populationwignerfock')
 
 # %%
 
-Entropy = VonEntropy(Wigners,tiempo)
+# Entropy = VonEntropy(Wigners,tiempo)
 
 
 # %%
@@ -35,7 +35,8 @@ for i in range(len(evolucion_temporal_estado_Fock)):
 fig, ax = plt.subplots(figsize=(6, 6))    
 ax.plot(tiempo,Entropy , color = 'firebrick')
 ax.set_xlabel('Tiempo')
-ax.set_ylabel('Entropia de Von Neumann')
+ax.set_ylabel('Entropia')
+ax.set_title('Entropia de Von Neumann')
 
 
 # %%
