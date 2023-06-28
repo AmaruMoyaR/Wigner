@@ -42,15 +42,25 @@ Wignersc = WignerEvolution(evolucion_temporal_estado_cat, xvec, wignerslistc)
 AnimatedWigner(Wignersc,xvec,'wignercat')
 AnimatePopulation(tasa_inversionc,tiempo,'populationwignercat')
 # %%
-Entropyc = []
+# Entropyc = []
+# for i in range(len(evolucion_temporal_estado_cat)):
+#     Entropyc.append(entropy_vn(evolucion_temporal_estado_cat[i]))
+
+# fig, ax = plt.subplots(figsize=(6, 6))    
+# ax.plot(tiempo,Entropyc , color = 'firebrick')
+# ax.set_xlabel('Tiempo')
+# ax.set_ylabel('Entropia')
+# ax.set_title('Entropia de Von Neumann')
+
+Fidelityc= []
 for i in range(len(evolucion_temporal_estado_cat)):
-    Entropyc.append(entropy_vn(evolucion_temporal_estado_cat[i]))
+    Fidelityc.append(entropy_vn(evolucion_temporal_estado_cat[i]))
 
 fig, ax = plt.subplots(figsize=(6, 6))    
-ax.plot(tiempo,Entropyc , color = 'firebrick')
+ax.plot(tiempo,Fidelityc , color = 'firebrick')
 ax.set_xlabel('Tiempo')
-ax.set_ylabel('Entropia')
-ax.set_title('Entropia de Von Neumann')
+ax.set_ylabel('Fidelidad')
+ax.set_title('Fidelidad cat state')
 
 
 # %%
