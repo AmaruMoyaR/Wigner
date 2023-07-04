@@ -31,29 +31,37 @@ States.figuremaker(psi2,xvec,3,2)
 plt.show()
 
 # %%
-listentropy = []
-listentropy2 = []
-for i in range(len(psi)):
-    listentropy.append(entropy_vn(psi[i]))
-    listentropy2.append(entropy_vn(psi2[i]))
 
-plt.plot(listentropy, 'o')
-plt.plot(listentropy2, 'o')
 
-# %%
 
-fig, axes = plt.subplots(1, 3, figsize=(12,3))
-plot_fock_distribution(psi[0], fig=fig, ax=axes[0], title="Coherent state")
-plot_fock_distribution(psi[1], fig=fig, ax=axes[1], title="Thermal state")
-plot_fock_distribution(psi[2], fig=fig, ax=axes[2], title="Fock state")
-fig.tight_layout()
-plt.show()
 
-# %%
-fig, axes = plt.subplots(1, 3, figsize=(12,3))
-plot_fock_distribution(psi2[0], fig=fig, ax=axes[0], title=" Superposition of basis")
-plot_fock_distribution(psi2[1], fig=fig, ax=axes[1], title="Schrödinger cat")
-plot_fock_distribution(psi2[2], fig=fig, ax=axes[2], title="Fock state n = 3")
-fig.tight_layout()
-plt.show()
+
+
+
+
+# listentropy = []
+# listentropy2 = []
+# for i in range(len(psi)):
+#     listentropy.append(entropy_vn(psi[i]))
+#     listentropy2.append(entropy_vn(psi2[i]))
+
+# plt.plot(listentropy, 'o')
+# plt.plot(listentropy2, 'o')
+
+# # %%
+
+# fig, axes = plt.subplots(1, 3, figsize=(12,3))
+# plot_fock_distribution(psi2[0], fig=fig, ax=axes[0], title="2 Coherent states")
+# plot_fock_distribution(psi2[1], fig=fig, ax=axes[1], title="Fock state n = 10")
+# plot_fock_distribution(psi2[2], fig=fig, ax=axes[2], title="Squeezed State")
+# fig.tight_layout()
+# plt.show()
+
+# # %%
+# fig, axes = plt.subplots(1, 3, figsize=(12,3))
+# plot_fock_distribution(psi[0], fig=fig, ax=axes[0], title=" Superposition of basis")
+# plot_fock_distribution(psi[1], fig=fig, ax=axes[1], title="Schrödinger cat")
+# plot_fock_distribution(psi[2], fig=fig, ax=axes[2], title="Fock state n = 3")
+# fig.tight_layout()
+# plt.show()
 # %%

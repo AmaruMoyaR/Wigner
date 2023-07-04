@@ -226,6 +226,7 @@ def figuremaker(psi_list, xvec, n=None, m =None):
                 plot_wigner(psi_list[i], fig=fig, ax=ax, projection='3d', alpha_max=5.5, cmap=wmap_list[i]);
                 # ax.axis('off')
                 # fig.tight_layout()
+                
     # plt.close(fig)
     # Adjust the spacing between subplots
     fig.tight_layout()
@@ -273,10 +274,10 @@ def Plot_Population(tiempo, tasa_inversion, color):
     plt.show()
     
     
-def WignerEvolution(State_in_time,xvec,Wigners): #esta se demora mas q yo en licenciarme
+def WignerEvolution(State_in_time,xvec, listw): #esta se demora mas q yo en licenciarme
     for i in range(len(State_in_time)):
-        Wigners.append(q.wigner(State_in_time[i],xvec,xvec))    
-    return Wigners
+        listw.append(q.wigner(State_in_time[i],xvec,xvec))    
+    return listw
 
 
 def VonEntropy(State,t):
