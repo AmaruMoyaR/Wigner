@@ -21,15 +21,26 @@ AnimatedWigner(Wignersf,xvec,'wignerfock')
 AnimatePopulation(tasa_inversionf,tiempo,'populationwignerfock')
 
 # %%
-Entropyf = []
+# Entropyf = []
+# for i in range(len(evolucion_temporal_estado_Fock)):
+#     Entropyf.append(entropy_vn(evolucion_temporal_estado_Fock[i]))
+
+# fig, ax = plt.subplots(figsize=(6, 6))    
+# ax.plot(tiempo,Entropyf , color = 'firebrick')
+# ax.set_xlabel('Tiempo')
+# ax.set_ylabel('Entropia')
+# ax.set_title('Entropia de Von Neumann')
+
+Fidelityfock= []
 for i in range(len(evolucion_temporal_estado_Fock)):
-    Entropyf.append(entropy_vn(evolucion_temporal_estado_Fock[i]))
+    Fidelityfock.append(q.fidelity(evolucion_temporal_estado_Fock[i], q.fock(2*N,10)))
 
 fig, ax = plt.subplots(figsize=(6, 6))    
-ax.plot(tiempo,Entropyf , color = 'firebrick')
+ax.plot(tiempo,Fidelityfock , color = 'firebrick')
 ax.set_xlabel('Tiempo')
-ax.set_ylabel('Entropia')
-ax.set_title('Entropia de Von Neumann')
+ax.set_ylabel('Fidelity')
+ax.set_title('Fidelidad Fock')
+
 
 
 # %%
@@ -54,7 +65,7 @@ AnimatePopulation(tasa_inversionc,tiempo,'populationwignercat')
 
 Fidelityc= []
 for i in range(len(evolucion_temporal_estado_cat)):
-    Fidelityc.append(entropy_vn(evolucion_temporal_estado_cat[i]))
+    Fidelityc.appendf(q.fidelity(evolucion_temporal_estado_cat[i]))
 
 fig, ax = plt.subplots(figsize=(6, 6))    
 ax.plot(tiempo,Fidelityc , color = 'firebrick')
@@ -108,21 +119,6 @@ ax.set_ylabel('Entropia')
 ax.set_title('Entropia de Von Neumann')
 
 # %%
-f = open('wigner.txt','w')
-f.write(str(Wignersf))
-f.write('\n')
-f.write(str(wignerslistsq))
-f.write('\n')
-f.write(str(Wignersc))
-f.write('\n')
-f.write(str(wignerslistc))
-f.write('\n')
-f.write(str(Wignerssq))
-f.write('\n')
-f.write(str(wignerslistsq))
-f.write('\n')
-f.write(str(Wignerssq_c))
-f.write('\n')
-f.write(str(wignerslistsq_c))
-f.close()
+
+
 # %%

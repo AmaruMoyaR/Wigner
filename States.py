@@ -313,7 +313,7 @@ def AnimatedWigner(Wigners, xvec, savename):
 
         # Create the animation
         ani = animation.FuncAnimation(fig, update, frames=W.shape[0], repeat=False)
-        writer = animation.FFMpegWriter(fps=25, metadata=dict(artist='Yo'), bitrate=-1)
+        writer = animation.FFMpegWriter(fps=10, metadata=dict(artist='Yo'), bitrate=-1)
         ani.save(savename + '.gif', writer=writer)
         plt.draw()
         plt.show()
